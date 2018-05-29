@@ -199,14 +199,14 @@ public class NXCS implements IBase {
         }
         /* get current state */
         String curState = env.getState();
-        Point curPoint = env.getPoint();
+        Point curLocation = env.getCurrentLocation();
 
         /* if previous State!null, update [A]-1 and run ga */
         if (previousState != null) {
             /* updateSet include P calculation */
             //TODO:update setA and runGA according to weights
             for (int w = 0; w < MOEAD_Weights.size(); w++) {
-                List<Classifier> setA_W = updateSet(previousState, curState, previousPoint, curPoint, action, reward, MOEAD_Weights.get(w), params.groupSize);
+                List<Classifier> setA_W = updateSet(previousState, curState, previousPoint, curLocation, action, reward, MOEAD_Weights.get(w), params.groupSize);
                 runGA(setA_W, previousState, previousPoint, MOEAD_Weights.get(w));
             }
         }
@@ -471,7 +471,7 @@ public class NXCS implements IBase {
             //0:pointMatch, 1:stateMatch, 2:bothMatch, 3:oneMatch
             if (method == 0) {
                 //0:pointMatch
-                for (String tstate : getStateByLocations(getCoveringLocationByRange(choice.xaxis_L,choice.xaxis_U, choice.yaxis_L, choice.yaxis_U))) {
+                for (String tstate : getStateByLocations(getCoveringLocationByRange(choice.xaxis_L, choice.xaxis_U, choice.yaxis_L, choice.yaxis_U))) {
                     List<Classifier> actionSet = population.stream().filter(c -> stateMatches(c.condition, tstate)
                             && Arrays.equals(c.weight_moead, choice.weight_moead)
                             && c.action == choice.action)
@@ -520,11 +520,11 @@ public class NXCS implements IBase {
         s5++;
         assert (clas != null) : "Cannot insert null classifier";
         Optional<Classifier> same = null;
-        if(method==0){
-            same = population.stream().filter(c -> c.action == clas.action && c.xaxis_L>clas.xaxis_L&&c.xaxis_U<clas.xaxis_U&&c.yaxis_U<clas.yaxis_U&&c.yaxis_L>clas.yaxis_L && Arrays.equals(c.weight_moead, clas.weight_moead)).findFirst();
+        if (method == 0) {
+            same = population.stream().filter(c -> c.action == clas.action && c.xaxis_L > clas.xaxis_L && c.xaxis_U < clas.xaxis_U && c.yaxis_U < clas.yaxis_U && c.yaxis_L > clas.yaxis_L && Arrays.equals(c.weight_moead, clas.weight_moead)).findFirst();
 
-        }else{
-        same = population.stream().filter(c -> c.action == clas.action && c.condition.equals(clas.condition) && Arrays.equals(c.weight_moead, clas.weight_moead)).findFirst();
+        } else {
+            same = population.stream().filter(c -> c.action == clas.action && c.condition.equals(clas.condition) && Arrays.equals(c.weight_moead, clas.weight_moead)).findFirst();
         }
         if (same.isPresent()) {
             same.get().numerosity++;
@@ -963,7 +963,7 @@ public class NXCS implements IBase {
             System.out.println(String.format("no classifier with this weight:%f, %f", moeadWeight[0], moeadWeight[1]));
 //            generateCoveringClassifierbyWeight(previousState, moeadWeight);
             Classifier clas = generateClassifier(params, previousState, previousPoint, action, 0, moeadWeight);
-            insertIntoPopulation(clas,mpParams.method);
+            insertIntoPopulation(clas, mpParams.method);
             deleteFromPopulation(mpParams.method);
 
             moead_actionSet.add(clas);
@@ -1163,10 +1163,10 @@ public class NXCS implements IBase {
                     } else if (parent2.doesSubsume(child, params.thetaSub, params.e0)) {
                         parent2.numerosity++;
                     } else {
-                        insertIntoPopulation(child,mpParams.method);
+                        insertIntoPopulation(child, mpParams.method);
                     }
                 } else {
-                    insertIntoPopulation(child,mpParams.method);
+                    insertIntoPopulation(child, mpParams.method);
                 }
                 deleteFromPopulation(mpParams.method);
             }
